@@ -18,13 +18,19 @@ class Recipe(models.Model):
 
     title = models.CharField(max_length=255)
     description = models.TextField()
-    instructions = models.TextField()
+    steps = models.TextField()
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    image = models.URLField(blank=True, null=True)
     preparation_time = models.IntegerField()
     cooking_time = models.IntegerField()
     servings = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
-
+    
+    favorited_by = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='favorite_recipes',
+        blank=True
+    )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
