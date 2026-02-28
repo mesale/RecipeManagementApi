@@ -8,6 +8,14 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
+
+class IsCreatorOrAdmin(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return request.user.is_staff or obj.created_by_id == request.user.id
+
+
 class ToggleFavoriteView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -55,7 +63,4 @@ class RecipeListCreateView(generics.ListCreateAPIView):
 class RecipeRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-
-    def perform_update(self, serializer):
-        serializer.save(created_by=self.request.user)
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsCreatorOrAdmin]

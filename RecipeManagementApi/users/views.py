@@ -61,3 +61,19 @@ class UserFavoritesView(APIView):
         recipe = get_object_or_404(Recipe, pk=recipe_id)
         recipe.favorited_by.add(user)
         return Response({"message": "Added to favorites"}, status=status.HTTP_200_OK)
+
+
+class UserFavoriteDetailView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request, pk, recipe_id):
+        user = get_object_or_404(User, pk=pk)
+        if not (request.user.is_staff or request.user.id == user.id):
+            return Response({"detail": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
+
+        recipe = get_object_or_404(Recipe, pk=recipe_id)
+        if not recipe.favorited_by.filter(pk=user.pk).exists():
+            return Response({"detail": "Recipe is not in favorites"}, status=status.HTTP_404_NOT_FOUND)
+
+        recipe.favorited_by.remove(user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
